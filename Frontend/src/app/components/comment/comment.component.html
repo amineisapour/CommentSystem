@@ -1,0 +1,116 @@
+<div style="margin: 20px;" id="div-count">
+    <mat-chip-list>
+        <mat-chip color="primary" selected>{{ commentCount }} Comment{{ commentCount > 1 ? 's': ''}}</mat-chip>
+    </mat-chip-list>
+</div>
+
+<ng-container *ngTemplateOutlet="recursiveListTmpl; context:{ list: commentItems }"></ng-container>
+
+<ng-template #recursiveListTmpl let-list="list">
+
+    <ng-template ngFor let-item [ngForOf]="list" let-i="index" let-f="first" let-l="last" [ngForTrackBy]="trackByFn">
+
+        <ng-template [ngIf]="item.children" [ngIfElse]="divAlone">
+            <mat-card style="margin: 20px;">
+                <mat-card-title>
+                    <table id="table-{{ item.id }}" width="100%" cellspacing="0" style="padding: 0 7px 7px 0;">
+                        <tr>
+                            <td style="width: 80%; text-align: left;">
+                                {{ item.username }}
+                            </td>
+                            <td style="width: 20%; text-align: right;">
+                                <button *ngIf="item.level != 3" mat-raised-button color="primary" (click)="replay(item)">
+                                    Replay
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </mat-card-title>
+                <mat-card-subtitle>{{ item.registerDateTime | date:'YYYY-MM-dd HH:mm:ss' }}</mat-card-subtitle>
+                <mat-card-content>
+                    <p 
+                    style="text-align: justify; font-size: 16px; white-space: pre-wrap;" 
+                    [innerHTML]="item.text | replaceLineBreaks"></p>
+                    <ng-container *ngTemplateOutlet="recursiveListTmpl; context:{ list: item.children }"></ng-container>
+                </mat-card-content>
+            </mat-card>
+        </ng-template>
+
+
+        <ng-template #divAlone>
+            <mat-card style="margin: 20px;">
+                <mat-card-title>
+                    <table width="100%" cellspacing="0" style="padding: 0 7px 7px 0;">
+                        <tr>
+                            <td style="width: 80%; text-align: left;">
+                                {{ item.username }}
+                            </td>
+                            <td style="width: 20%; text-align: right;">
+                                <button *ngIf="item.level != 3" mat-raised-button color="primary" (click)="replay(item)">
+                                    Replay
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </mat-card-title>
+                <mat-card-subtitle>{{ item.registerDateTime | date:'YYYY-MM-dd HH:mm:ss' }}</mat-card-subtitle>
+                <mat-card-content>
+                    <p 
+                    style="text-align: justify; font-size: 16px; white-space: pre-wrap;" 
+                    [innerHTML]="item.text | replaceLineBreaks"></p>
+                </mat-card-content>
+            </mat-card>
+        </ng-template>
+
+    </ng-template>
+
+</ng-template>
+
+<div class="register-wrapper">
+
+    <mat-card>
+        <mat-card-title style="background-color: #fff !important;">
+            <mat-chip-list>
+                <mat-chip color="primary" selected>Add Comment</mat-chip>
+            </mat-chip-list>
+        </mat-card-title>
+        <mat-card-subtitle>
+            <span *ngIf="currentComment != null" style="font-weight: bold; color: red !important; padding-left: 10px;">
+                {{ currentComment != null ? 'Replay to: ' + currentComment.username : '' }}
+                <button mat-icon-button color="warn"  (click)="removeReplay()">
+                    <mat-icon>delete_forever</mat-icon>
+                  </button>
+            </span>
+        </mat-card-subtitle>
+
+        <form [formGroup]="commentForm" (ngSubmit)="register(commentForm.value)" class="example-form">
+            <mat-card-content>
+
+                <mat-form-field appearance="standard" class="example-full-width">
+                    <mat-label>Username</mat-label>
+                    <input matInput formControlName="username" #search name="username" type="text" autocomplete="off" required>
+                    <mat-error *ngIf="!commentForm.controls['username'].valid && commentForm.controls['username'].touched">
+                        {{getErrorMessage('username')}}
+                    </mat-error>
+                </mat-form-field>
+
+                <br><br>
+
+                <mat-form-field appearance="standard" class="example-full-width">
+                    <mat-label>Text</mat-label>
+                    <textarea  matInput formControlName="text" name="text" style="height: 80px;" autocomplete="off" required></textarea>
+                    <mat-error *ngIf="!commentForm.controls['text'].valid && commentForm.controls['text'].touched">
+                        {{getErrorMessage('text')}}
+                    </mat-error>
+                </mat-form-field>
+
+                <br><br>
+            </mat-card-content>
+
+            <br>
+            <button mat-raised-button type="submit" class="btn-block"
+                [disabled]="!commentForm.valid">Submit</button>
+
+        </form>
+    </mat-card>
+</div>
